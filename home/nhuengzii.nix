@@ -5,7 +5,6 @@
   home.homeDirectory = "/home/nhuengzii";
 
   imports = [
-    ./fonts
     ./git
   ];
 

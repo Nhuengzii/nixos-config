@@ -24,7 +24,7 @@
 
   fonts.fontconfig.enable = true;
   fonts.packages = with pkgs; [
-    noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra nerdfonts
+    nerdfonts tlwg
   ];
 
   # Enable networking

@@ -81,6 +81,9 @@
     #media-session.enable = true;
   };
 
+	# Enable docker
+	virtualisation.docker.enable = true;
+
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
@@ -88,7 +91,7 @@
   users.users.nhuengzii = {
     isNormalUser = true;
     description = "Anawat Moonmanee";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
     packages = with pkgs; [
     ];
   };
@@ -102,7 +105,7 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim wget git
+    vim wget git cmake gzip unzip unrar cargo go
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

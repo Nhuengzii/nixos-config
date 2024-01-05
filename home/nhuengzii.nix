@@ -6,12 +6,16 @@
 
   imports = [
     ./git
+    ./kitty
+    ./picom
+    ./qtile
   ];
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     neofetch discord neovim microsoft-edge-dev
-    vscode gh
+    vscode gh lazygit kitty rofi feh picom flameshot
+    arandr
   ];
 
   programs.bash = {

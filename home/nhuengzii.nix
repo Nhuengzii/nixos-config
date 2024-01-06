@@ -16,7 +16,7 @@
   home.packages = with pkgs; [
     neofetch discord neovim microsoft-edge-dev
     vscode gh lazygit kitty rofi feh picom flameshot
-    arandr
+    arandr ripgrep fd bat fzf
   ];
 
   # This value determines the home Manager release that your

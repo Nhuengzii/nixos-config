@@ -9,6 +9,7 @@
     ./kitty
     ./picom
     ./qtile
+    ./zsh
   ];
 
   # Packages that should be installed to the user profile.
@@ -17,11 +18,6 @@
     vscode gh lazygit kitty rofi feh picom flameshot
     arandr
   ];
-
-  programs.bash = {
-    enable = true;
-    enableCompletion = true;
-  };
 
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage

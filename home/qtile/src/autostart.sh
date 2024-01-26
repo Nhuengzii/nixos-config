@@ -15,3 +15,5 @@ nm-applet & disown # start network manager applet
 discord & disown # start discord
 
 xfce4-clipman & disown # stop xfce4-clipman
+
+xrandr --output eDP-1-1 --mode 1920x1200

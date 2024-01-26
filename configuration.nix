@@ -27,6 +27,22 @@
     nerdfonts tlwg
   ];
 
+  hardware.opengl = {
+  	enable = true;
+	driSupport = true;
+	driSupport32Bit = true;
+  };
+
+  hardware.nvidia = {
+  	modesetting.enable = true;
+	nvidiaSettings = true;
+	prime = {
+	  sync.enable = true;
+	  intelBusId = "PCI:0:2:0";
+	  nvidiaBusId = "PCI:1:0:0";
+	};
+  };
+
   # Enable networking
   networking.networkmanager.enable = true;
 
@@ -50,9 +66,11 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
-
+  services.xserver.videoDrivers = [ "nvidia" ];
   # Enable the KDE Plasma Desktop Environment.
-  services.xserver.displayManager.sddm.enable = true;
+  services.xserver.displayManager.sddm = {
+    enable = true;
+  };
   services.xserver.displayManager.defaultSession = "none+qtile";
   # services.xserver.desktopManager.plasma5.enable = true;
   services.xserver.windowManager.qtile = {
@@ -85,8 +103,8 @@
     #media-session.enable = true;
   };
 
-	# Enable docker
-	virtualisation.docker.enable = true;
+  # Enable docker
+  virtualisation.docker.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
@@ -112,6 +130,8 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     vim wget git cmake gzip unzip unrar cargo go
+    libsForQt5.qt5.qtquickcontrols2
+    libsForQt5.qt5.qtgraphicaleffects
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

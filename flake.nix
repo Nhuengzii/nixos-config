@@ -8,12 +8,16 @@
       url = "home-manager/release-23.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nvim = {
+      url = "github:Nhuengzii/nixvim-config";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, nvim,... }@inputs:
   let
     system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
+    pkgs = import nixpkgs { inherit system; config.allowUnfree= true; };
+    nvim' = nvim.packages.${system}.default;
   in
   {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
@@ -23,7 +27,7 @@
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
-            users.nhuengzii = import ./home/nhuengzii.nix;
+            users.nhuengzii = import ./home/nhuengzii.nix { inherit pkgs; nvim = nvim';};
           };
         }
       ];

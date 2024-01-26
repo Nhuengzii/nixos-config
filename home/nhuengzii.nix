@@ -1,9 +1,8 @@
-{ config, pkgs, ... }:
+{ pkgs, nvim, ... }:
 
 {
   home.username = "nhuengzii";
   home.homeDirectory = "/home/nhuengzii";
-
   imports = [
     ./git
     ./kitty
@@ -14,9 +13,10 @@
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
-    neofetch discord neovim microsoft-edge-dev
+    neofetch discord microsoft-edge-dev
     vscode gh lazygit kitty rofi feh picom flameshot
-    arandr ripgrep fd bat fzf
+    arandr ripgrep fd bat fzf networkmanagerapplet dunst libnotify brightnessctl
+    pavucontrol (nvim)
   ];
 
   # This value determines the home Manager release that your

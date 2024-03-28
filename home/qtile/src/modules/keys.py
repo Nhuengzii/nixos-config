@@ -14,7 +14,7 @@ keys = [
     Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
     Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
     Key([mod], 'backspace', lazy.next_screen(), desc="Next monitor"),
-    Key([mod], "w", lazy.spawn("microsoft-edge-dev"), desc="Launch Edge"),
+    Key([mod], "w", lazy.spawn("microsoft-edge"), desc="Launch Edge"),
     Key([mod], "f", lazy.window.toggle_floating(), desc="Toggle floating"),
     Key([mod],
         "space",

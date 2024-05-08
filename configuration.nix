@@ -11,8 +11,23 @@
     ];
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.enable = false;
+  boot.loader.efi = {
+    canTouchEfiVariables = true;
+    efiSysMountPoint = "/boot/efi";
+  };
+  boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    device = "nodev";
+  };
+  networking.extraHosts = ''
+    192.168.49.2 api.yay.com
+    158.108.38.75 vostro-75
+    158.108.38.76 vostro-76
+    158.108.38.77 vostro-77
+  '';
+
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -21,26 +36,24 @@
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
-
   fonts.fontconfig.enable = true;
   fonts.packages = with pkgs; [
-    nerdfonts tlwg
-  ];
+    nerdfonts tlwg ];
 
   hardware.opengl = {
-  	enable = true;
-	driSupport = true;
-	driSupport32Bit = true;
+    enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
   };
 
   hardware.nvidia = {
-  	modesetting.enable = true;
-	nvidiaSettings = true;
-	prime = {
-	  sync.enable = true;
-	  intelBusId = "PCI:0:2:0";
-	  nvidiaBusId = "PCI:1:0:0";
-	};
+    modesetting.enable = true;
+    nvidiaSettings = true;
+    prime = {
+      sync.enable = true;
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
+    };
   };
 
   # Enable networking
@@ -72,7 +85,19 @@
     enable = true;
   };
   services.xserver.displayManager.defaultSession = "none+qtile";
-  # services.xserver.desktopManager.plasma5.enable = true;
+  services.xserver.desktopManager.plasma5.enable = true;
+  programs.hyprland = {
+    enable = true;
+    enableNvidiaPatches = true;
+    xwayland.enable = true;
+  };
+
+  environment.sessionVariables = {
+    WLR_NO_HARDWARE_CURSORS = "1";
+    NIXOS_OZONE_WL = "1";
+    GTK_USE_PORTAL = "1";
+  };
+  
   services.xserver.windowManager.qtile = {
     enable = true;
   };
@@ -95,6 +120,7 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+    jack.enable =true;
     # If you want to use JACK applications, uncomment this
     #jack.enable = true;
 
@@ -105,6 +131,8 @@
 
   # Enable docker
   virtualisation.docker.enable = true;
+  virtualisation.libvirtd.enable = true;
+  programs.virt-manager.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
@@ -114,7 +142,7 @@
   users.users.nhuengzii = {
     isNormalUser = true;
     description = "Anawat Moonmanee";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" "libvirtd" ];
     shell = pkgs.zsh;
     packages = with pkgs; [
     ];
@@ -128,11 +156,30 @@
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
+
   environment.systemPackages = with pkgs; [
     vim wget git cmake gzip unzip unrar cargo go
     libsForQt5.qt5.qtquickcontrols2
     libsForQt5.qt5.qtgraphicaleffects
+    qemu dunst libnotify swww kitty rofi-wayland
+    hypr
+    waybar
+    (
+      slack.overrideAttrs (old: {
+        installPhase = old.installPhase + ''
+        rm $out/bin/slack
+
+        makeWrapper $out/lib/slack/slack $out/bin/slack \
+          --prefix XDG_DATA_DIRS : $GSETTINGS_SCHEMAS_PATH \
+          --prefix PATH : ${lib.makeBinPath [pkgs.xdg-utils]} \
+          --add-flags "--ozone-platform=wayland --enable-features=UseOzonePlatform,WebRTCPipeWireCapturer"
+        '';
+      })
+    )
   ];
+
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = with pkgs; [ xdg-desktop-portal-gtk xdg-desktop-portal-wlr ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -145,13 +192,13 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  networking.firewall.enable = false;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

@@ -12,12 +12,34 @@
   ];
 
   # Packages that should be installed to the user profile.
-  home.packages = with pkgs; [
-    neofetch discord microsoft-edge-dev
-    vscode gh lazygit kitty rofi feh picom flameshot
+  home.packages = let 
+    vscode = pkgs.writeShellScriptBin "code" ''
+      unset NIXOS_OZONE_WL
+      exec ${pkgs.vscode}/bin/code
+    '';
+    runx = pkgs.writeShellScriptBin "runx" ''
+      function runx {
+        if [[ $2 -ne "" ]]; then
+          nix-shell -p $2 --run $1
+        else
+          nix-shell -p $1 --run $1
+        fi
+      }
+    '';
+  in
+  with pkgs; [
+    neofetch armcord microsoft-edge
+    gh lazygit kitty rofi feh picom flameshot
     arandr ripgrep fd bat fzf networkmanagerapplet dunst libnotify brightnessctl
-    pavucontrol (nvim)
-  ];
+    pavucontrol runx
+  ] ++ [vscode];
+
+  dconf.settings = {
+    "org/virt-manager/virt-manager/connections" = {
+      autoconnect = ["qemu:///system"];
+      uris = ["qemu:///system"];
+    };
+  };
 
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage

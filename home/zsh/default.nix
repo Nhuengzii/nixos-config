@@ -14,4 +14,5 @@ in
       theme = "agnoster";
     };
   };
+  programs.zoxide.enable = true;
 }

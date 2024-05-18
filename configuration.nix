@@ -6,27 +6,19 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = false;
-  boot.loader.efi = {
-    canTouchEfiVariables = true;
-    efiSysMountPoint = "/boot/efi";
-  };
-  boot.loader.grub = {
-    enable = true;
-    efiSupport = true;
-    device = "nodev";
-  };
+  boot.loader.systemd-boot.enable = true;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
   networking.extraHosts = ''
-    192.168.49.2 api.yay.com
-    158.108.38.75 vostro-75
-    158.108.38.76 vostro-76
-    158.108.38.77 vostro-77
+    192.168.1.101 api.kube
   '';
+
+  ## Kube
 
 
   networking.hostName = "nixos"; # Define your hostname.
@@ -38,7 +30,9 @@
 
   fonts.fontconfig.enable = true;
   fonts.packages = with pkgs; [
-    nerdfonts tlwg ];
+    (nerdfonts.override { fonts = [ "CascadiaCode" ]; })
+    tlwg
+  ];
 
   hardware.opengl = {
     enable = true;
@@ -47,12 +41,12 @@
   };
 
   hardware.nvidia = {
-    modesetting.enable = true;
-    nvidiaSettings = true;
-    prime = {
-      sync.enable = true;
-      intelBusId = "PCI:0:2:0";
-      nvidiaBusId = "PCI:1:0:0";
+    modesetting.enable = true; # Enable the open-source driver
+    nvidiaSettings = true; # Enable the NVIDIA settings tool
+     prime = {
+       sync.enable = true;
+       intelBusId = "PCI:0:2:0";
+       nvidiaBusId = "PCI:1:0:0";
     };
   };
 
@@ -79,34 +73,22 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
-  services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = [ "nvidia"  ];
   # Enable the KDE Plasma Desktop Environment.
-  services.xserver.displayManager.sddm = {
+  services.displayManager.sddm = {
     enable = true;
+    wayland.enable = false;
+    theme = "${import ./sddm/sddm-sugar-candy.nix {inherit pkgs;}}";
   };
-  services.xserver.displayManager.defaultSession = "none+qtile";
-  services.xserver.desktopManager.plasma5.enable = true;
-  programs.hyprland = {
-    enable = true;
-    enableNvidiaPatches = true;
-    xwayland.enable = true;
-  };
+  services.displayManager.defaultSession = "none+qtile";
+  services.xserver.desktopManager.plasma5.enable = false;
 
-  environment.sessionVariables = {
-    WLR_NO_HARDWARE_CURSORS = "1";
-    NIXOS_OZONE_WL = "1";
-    GTK_USE_PORTAL = "1";
-  };
-  
+  environment.sessionVariables = { };
+
   services.xserver.windowManager.qtile = {
     enable = true;
   };
 
-  # Configure keymap in X11
-  services.xserver = {
-    layout = "us";
-    xkbVariant = "";
-  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -120,7 +102,7 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    jack.enable =true;
+    jack.enable = true;
     # If you want to use JACK applications, uncomment this
     #jack.enable = true;
 
@@ -131,8 +113,17 @@
 
   # Enable docker
   virtualisation.docker.enable = true;
-  virtualisation.libvirtd.enable = true;
-  programs.virt-manager.enable = true;
+  virtualisation.libvirtd = {
+    enable = true;
+    qemu = {
+      package = pkgs.qemu_kvm;
+      runAsRoot = true;
+      swtpm.enable = true;
+      ovmf = {
+        enable = true;
+      };
+    };
+  };
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
@@ -158,27 +149,37 @@
   # $ nix search wget
 
   environment.systemPackages = with pkgs; [
-    vim wget git cmake gzip unzip unrar cargo go
+    vim
+    wget
+    git
+    cmake
+    gzip
+    unzip
+    tmux
+    qemu
+    minikube kubectl
+    
     libsForQt5.qt5.qtquickcontrols2
     libsForQt5.qt5.qtgraphicaleffects
-    qemu dunst libnotify swww kitty rofi-wayland
-    hypr
-    waybar
-    (
-      slack.overrideAttrs (old: {
-        installPhase = old.installPhase + ''
-        rm $out/bin/slack
-
-        makeWrapper $out/lib/slack/slack $out/bin/slack \
-          --prefix XDG_DATA_DIRS : $GSETTINGS_SCHEMAS_PATH \
-          --prefix PATH : ${lib.makeBinPath [pkgs.xdg-utils]} \
-          --add-flags "--ozone-platform=wayland --enable-features=UseOzonePlatform,WebRTCPipeWireCapturer"
-        '';
-      })
-    )
+    libsForQt5.qt5.qtsvg
+    # kompose kubectl kubernetes lens
   ];
 
-  xdg.portal.enable = true;
+  # services.kubernetes = {
+  #   roles = ["master" "node" ];
+  #   masterAddress = "api.kube";
+  #   apiserverAddress = "https://api.kube:6443";
+  #   easyCerts = true;
+  #   apiserver = {
+  #     securePort = 6443;
+  #     advertiseAddress = "192.168.1.101";
+  #   };
+  #
+  #   addons.dns.enable = true;
+  #   kubelet.extraOpts = "--fail-swap-on=false";
+  # };
+
+  xdg.portal.enable = false;
   xdg.portal.extraPortals = with pkgs; [ xdg-desktop-portal-gtk xdg-desktop-portal-wlr ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -206,6 +207,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.11"; # Did you read the comment?
+  system.stateVersion = "24.05"; # Did you read the comment?
 
 }

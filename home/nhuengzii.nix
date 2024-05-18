@@ -9,36 +9,37 @@
     ./picom
     ./qtile
     ./zsh
+    ./nixpkgs
   ];
 
   # Packages that should be installed to the user profile.
-  home.packages = let 
-    vscode = pkgs.writeShellScriptBin "code" ''
-      unset NIXOS_OZONE_WL
-      exec ${pkgs.vscode}/bin/code
-    '';
-    runx = pkgs.writeShellScriptBin "runx" ''
-      function runx {
-        if [[ $2 -ne "" ]]; then
-          nix-shell -p $2 --run $1
-        else
-          nix-shell -p $1 --run $1
-        fi
-      }
-    '';
-  in
-  with pkgs; [
-    neofetch armcord microsoft-edge
-    gh lazygit kitty rofi feh picom flameshot
-    arandr ripgrep fd bat fzf networkmanagerapplet dunst libnotify brightnessctl
-    pavucontrol runx
-  ] ++ [vscode];
+  home.packages = with pkgs; [
+    neofetch
+    discord
+    microsoft-edge
+    gh lazygit
+    kitty
+    rofi
+    feh
+    picom
+    flameshot
+    arandr
+    ripgrep
+    fd
+    bat
+    fzf
+    networkmanagerapplet
+    dunst
+    libnotify
+    brightnessctl
+    pavucontrol
+    vscode
+    slack
+  ];
 
-  dconf.settings = {
-    "org/virt-manager/virt-manager/connections" = {
-      autoconnect = ["qemu:///system"];
-      uris = ["qemu:///system"];
-    };
+  programs.direnv.enable = true;
+  home.sessionVariables = {
+    PATH = "/home/nhuengzii/.local/bin:$PATH";
   };
 
   # This value determines the home Manager release that your
